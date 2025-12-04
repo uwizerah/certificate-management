@@ -105,7 +105,7 @@ import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { TemplateListComponent } from './features/templates/template-list.component';
 import { TemplateEditorComponent } from './features/templates/template-editor.component';
 import { VerifyComponent } from './features/verify/verify.component';
-import { GenerateComponent } from './features/certificates/generate.component';
+// import { GenerateComponent } from './features/certificates/generate.component';
 import { CertificateListComponent } from './features/certificates/list.component';
 import { CustomerComponent } from './features/customers/customer.component';
 import { ApiKeyService } from './core/auth/api-key.service';
@@ -136,7 +136,7 @@ export const routes: Routes = [
       // { path: 'templates/new', component: TemplateEditorComponent },
       { path: 'templates/:id', component: TemplateEditorComponent },
       { path: 'templates/:id/generate', component: TemplateGenerateComponent },
-      { path: 'certificates/generate', component: GenerateComponent },
+      // { path: 'certificates/generate', component: GenerateComponent },
       { path: 'certificates/list', component: CertificateListComponent },
       { path: 'verify', component: VerifyComponent },
       { path: 'customers', component: CustomerComponent }

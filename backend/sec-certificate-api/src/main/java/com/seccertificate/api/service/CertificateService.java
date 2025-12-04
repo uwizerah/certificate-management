@@ -48,7 +48,7 @@ public class CertificateService {
         Certificate cert = new Certificate();
         cert.setCustomer(customer);
         cert.setTemplate(template);
-        cert.setIssuedTo(data.get("name"));
+        cert.setIssuedTo("N/A");
         cert.setDataJson(mapper.writeValueAsString(data));
         cert.setStatus("PENDING");
         cert.setVerificationHash(hash(customer.getId() + "-" + templateId + "-" + System.nanoTime()));

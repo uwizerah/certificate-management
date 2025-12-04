@@ -51,4 +51,11 @@ export class TemplateGenerateComponent implements OnInit {
     this.previewHtml = this.sanitizer.bypassSecurityTrustHtml(html) as any;
 
   }
+
+  generate() {
+    this.api.generateCertificate(this.templateId, { data: this.values }).subscribe(res => {
+        alert('Certificate generated successfully!');
+    });
+  }
+
 }

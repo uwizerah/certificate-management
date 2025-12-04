@@ -35,10 +35,13 @@ export class ApiService {
     return this.http.get<any>(`${BASE}/templates/${id}`);
   }
 
-  generateCertificate(templateId: number, data: { name: string }): Observable<CertificateResponse> {
+  generateCertificate(
+    templateId: number,
+    body: { data: Record<string, string> }
+  ): Observable<CertificateResponse> {
     return this.http.post<CertificateResponse>(
       `${BASE}/certificates/generate?templateId=${templateId}`,
-      data
+      body
     );
   }
 
