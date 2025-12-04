@@ -1,0 +1,15 @@
+<h2>Create Customer</h2>
+
+<input placeholder="Customer name" [(ngModel)]="name" />
+<button (click)="create()">Create</button>
+
+<hr/>
+
+<input placeholder="API Key" [(ngModel)]="apiKey" />
+<button (click)="load()">Load Customers</button>
+
+<ul>
+  <li *ngFor="let c of customers">
+    {{ c.id }} - {{ c.name }}
+  </li>
+</ul>

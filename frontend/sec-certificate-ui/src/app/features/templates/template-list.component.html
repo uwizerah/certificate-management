@@ -1,0 +1,76 @@
+<div class="max-w-5xl mx-auto p-6">
+  <div class="flex items-center justify-between mb-6">
+    <h2 class="text-2xl font-bold">Your Templates</h2>
+
+    <!-- OPEN MODAL BUTTON -->
+    <button
+      class="inline-flex items-center rounded-lg bg-black text-white px-4 py-2 text-sm hover:bg-gray-900"
+      (click)="showModal = true"
+    >
+      + New Template
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <div class="h-32 rounded-xl border animate-pulse bg-gray-50" *ngFor="let _ of [1,2,3,4,5,6]"></div>
+  </div>
+
+  <!-- Empty -->
+  <div *ngIf="!loading && templates.length === 0"
+       class="text-gray-600 border rounded-xl p-8 text-center">
+    No templates yet. Click <b>New Template</b> to create one.
+  </div>
+
+  <!-- Cards -->
+  <div *ngIf="!loading && templates.length"
+       class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+
+    <div *ngFor="let t of templates"
+         class="rounded-xl border p-4 shadow-sm hover:shadow-md transition">
+
+      <div class="flex items-start justify-between">
+        <h3 class="font-semibold text-lg">{{ t.name }}</h3>
+        <span class="text-xs px-2 py-1 rounded-full border">
+          ID: {{ t.id }}
+        </span>
+      </div>
+
+      <div class="mt-4 flex gap-2">
+        <a
+          [routerLink]="['/templates', t.id]"
+          class="inline-flex items-center rounded-lg border px-3 py-2 text-sm hover:bg-gray-50">
+          Open
+        </a>
+
+        <a
+          [routerLink]="['/certificates/generate']"
+          [queryParams]="{ templateId: t.id }"
+          class="inline-flex items-center rounded-lg bg-black text-white px-3 py-2 text-sm hover:bg-gray-900">
+          Generate
+        </a>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ================= MODAL ================= -->
+
+<div *ngIf="showModal"
+     class="fixed inset-0 bg-black/40 flex items-center justify-center z-50">
+
+  <div class="bg-white rounded-xl w-[600px] shadow-lg p-6">
+    <div class="flex justify-between items-center mb-4">
+      <h3 class="font-semibold text-lg">Create Template</h3>
+      <button (click)="closeModal()" class="text-gray-500 hover:text-black">✕</button>
+    </div>
+
+    <!-- REUSE TEMPLATE EDITOR -->
+    <app-template-editor
+      (saved)="closeModal(true)"
+      (cancel)="closeModal()">
+    </app-template-editor>
+
+  </div>
+</div>

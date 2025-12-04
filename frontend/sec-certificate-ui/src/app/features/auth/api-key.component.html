@@ -1,0 +1,34 @@
+<div class="card">
+
+  <!-- Header text -->
+  <h2>API Key Required</h2>
+  <p>Enter your access token to continue.</p>
+
+  <!-- Field -->
+  <label for="api-key">API Key</label>
+
+  <input 
+    id="api-key"
+    [(ngModel)]="key"
+    placeholder="Paste your API key here"
+  />
+
+  <!-- Button -->
+  <button 
+    (click)="save()"
+    [disabled]="loading || !key.trim()"
+  >
+    {{ loading ? 'Validating...' : 'Access Dashboard' }}
+  </button>
+
+  <!-- Error -->
+  <p *ngIf="error" class="error">
+    {{ error }}
+  </p>
+
+  <!-- Helper text -->
+  <p style="margin-top: 10px; font-size: 12px; text-align: center; color: #6b7280;">
+    🔐 Your API key is securely validated
+  </p>
+
+</div>

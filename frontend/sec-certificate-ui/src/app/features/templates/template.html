@@ -1,0 +1,19 @@
+<h2>Create Template</h2>
+
+<input placeholder="Customer ID" [(ngModel)]="customerId" />
+<input placeholder="API Key" [(ngModel)]="apiKey" />
+<br/><br/>
+
+<input placeholder="Template name" [(ngModel)]="name" />
+<textarea [(ngModel)]="htmlTemplate" placeholder="HTML Template"></textarea>
+
+<button (click)="create()">Create</button>
+<button (click)="load()">Load Templates</button>
+
+<hr/>
+
+<ul>
+  <li *ngFor="let t of templates">
+    {{ t.id }} - {{ t.name }}
+  </li>
+</ul>

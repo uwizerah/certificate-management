@@ -1,0 +1,143 @@
+<!-- <div class="min-h-screen bg-gray-50 dark:bg-gray-900 py-16 px-4 sm:px-6 lg:px-8 transition-colors duration-500 relative z-20">
+  <div class="max-w-6xl mx-auto">
+    <header class="text-center mb-16">
+      <h1 class="text-5xl font-extrabold text-gray-900 dark:text-white mb-3 tracking-tight">
+        {{ me ? ('Welcome back, ' + me.name + '!') : 'Welcome!' }}
+      </h1>
+      <p class="text-xl text-gray-600 dark:text-gray-400 font-light">
+        Your unified dashboard for certificate and template management.
+      </p>
+    </header>
+
+    <div class="space-y-12">
+      <section>
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6 border-b pb-2 border-gray-200 dark:border-gray-700">
+          Certificate Actions
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+          <a routerLink="/certificates/generate" class="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 p-8 border border-transparent hover:border-blue-500 transform hover:-translate-y-1">
+            <div class="flex items-start">
+              <div class="ml-5">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
+                  Generate Certificate
+                </h3>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  Create new certificates from existing templates.
+                </p>
+              </div>
+            </div>
+          </a>
+
+          <a routerLink="/certificates/list" class="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 p-8 border border-transparent hover:border-indigo-500 transform hover:-translate-y-1">
+            <div class="flex items-start">
+              <div class="ml-5">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors">
+                  View Certificates
+                </h3>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  Browse, download, and manage all generated certificates.
+                </p>
+              </div>
+            </div>
+          </a>
+
+          <a routerLink="/verify" class="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 p-8 border border-transparent hover:border-red-500 transform hover:-translate-y-1">
+            <div class="flex items-start">
+              <div class="ml-5">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white group-hover:text-red-600 dark:group-hover:text-red-400 transition-colors">
+                  Verify Certificate
+                </h3>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  Check the authenticity and validity of any certificate.
+                </p>
+              </div>
+            </div>
+          </a>
+        </div>
+      </section>
+
+      <section>
+        <h2 class="text-2xl font-bold text-gray-800 dark:text-gray-200 mb-6 border-b pb-2 border-gray-200 dark:border-gray-700">
+          Template Design
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <a routerLink="/templates" class="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 p-8 border border-transparent hover:border-gray-400 transform hover:-translate-y-1">
+            <div class="flex items-start">
+              <div class="ml-5">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white group-hover:text-gray-600 dark:group-hover:text-gray-400 transition-colors">
+                  View Templates
+                </h3>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  Browse, edit, and manage all your available design templates.
+                </p>
+              </div>
+            </div>
+          </a>
+
+          <a routerLink="/templates/new" class="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-500 p-8 border border-transparent hover:border-green-500 transform hover:-translate-y-1">
+            <div class="flex items-start">
+              <div class="ml-5">
+                <h3 class="text-xl font-bold text-gray-900 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors">
+                  Create New Template
+                </h3>
+                <p class="mt-1 text-sm text-gray-500 dark:text-gray-400">
+                  Start designing a new certificate template from scratch.
+                </p>
+              </div>
+            </div>
+          </a>
+        </div>
+      </section>
+    </div>
+  </div>
+</div> -->
+
+<div class="layout">
+
+  <!-- SIDEBAR -->
+  <aside class="sidebar">
+
+    <div class="logo">
+      SecCERT
+    </div>
+
+    <nav>
+      <a routerLink="/dashboard" routerLinkActive="active" [routerLinkActiveOptions]="{exact:true}">
+        Dashboard
+      </a>
+      <a routerLink="/dashboard/templates" routerLinkActive="active">
+        Templates
+      </a>
+      <a routerLink="/dashboard/certificates/generate" routerLinkActive="active">
+        Generate
+      </a>
+      <a routerLink="/dashboard/certificates/list" routerLinkActive="active">
+        Certificates
+      </a>
+      <a routerLink="/dashboard/verify" routerLinkActive="active">
+        Verify
+      </a>
+    </nav>
+
+  </aside>
+
+
+  <!-- MAIN CONTENT -->
+  <main class="content">
+
+    <!-- Header -->
+    <header class="header">
+      <h1>
+        {{ me ? ('Welcome back, ' + me.name) : 'Welcome' }}
+      </h1>
+      <p>Your unified certificate management system.</p>
+    </header>
+
+    <!-- ROUTED CONTENT AREA -->
+    <section class="page">
+      <router-outlet></router-outlet>
+    </section>
+
+  </main>
+
+</div>

@@ -1,0 +1,84 @@
+/* :host {
+    display: block;
+    height: 100%; 
+} */
+
+:host {
+  height: 100vh;
+  display: block;
+}
+
+/* Layout */
+.layout {
+  display: flex;
+  height: 100vh;
+  background: #f4f6f9;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 230px;
+  background: #0f172a;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  padding: 20px;
+}
+
+.logo {
+  font-size: 20px;
+  font-weight: 800;
+  margin-bottom: 30px;
+  color: #60a5fa;
+}
+
+/* Nav */
+nav a {
+  display: block;
+  padding: 10px 12px;
+  margin-bottom: 6px;
+  border-radius: 6px;
+  color: #cbd5f5;
+  text-decoration: none;
+  transition: background 0.15s;
+}
+
+nav a:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+nav a.active {
+  background: #2563eb;
+  color: white;
+}
+
+/* Main */
+.content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+}
+
+/* Header */
+.header h1 {
+  margin: 0;
+  font-size: 28px;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.header p {
+  color: #64748b;
+  margin-top: 6px;
+}
+
+/* Page slot */
+.page {
+  margin-top: 20px;
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  height: 100%;
+  box-shadow: 0 6px 12px rgba(0,0,0,0.05);
+}
