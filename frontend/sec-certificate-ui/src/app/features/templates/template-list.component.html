@@ -51,8 +51,7 @@
         </a>
 
         <a
-          [routerLink]="['/dashboard/certificates/generate']"
-          [queryParams]="{ templateId: t.id }"
+          [routerLink]="['/dashboard/templates', t.id, 'generate']"
           class="inline-flex items-center rounded-lg bg-black text-white px-3 py-2 text-sm hover:bg-gray-900">
           Generate
         </a>
