@@ -1,0 +1,30 @@
+<div class="max-w-7xl mx-auto p-6 grid grid-cols-2 gap-8">
+
+  <!-- LEFT: INPUT FORM -->
+  <div class="bg-white rounded-xl border p-6 space-y-4">
+    <h2 class="text-xl font-semibold">Fill Certificate Fields</h2>
+
+    <div *ngFor="let key of template?.placeholders">
+      <label class="block text-sm font-medium mb-1 capitalize">
+        {{ key.replace('_', ' ') }}
+      </label>
+
+      <input
+        class="w-full border rounded-lg px-3 py-2"
+        [(ngModel)]="values[key]"
+        (input)="updatePreview()"
+        [placeholder]="'Enter ' + key"
+      />
+    </div>
+  </div>
+
+  <!-- RIGHT: LIVE PREVIEW -->
+  <div class="bg-gray-100 rounded-xl p-4 overflow-auto">
+    <iframe
+      [srcdoc]="previewHtml"
+      class="w-full h-[600px] rounded-lg border bg-white"
+      sandbox="allow-same-origin" 
+    ></iframe>
+  </div>
+
+</div>

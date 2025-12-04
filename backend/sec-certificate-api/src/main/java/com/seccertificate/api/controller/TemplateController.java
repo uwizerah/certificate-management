@@ -30,4 +30,11 @@ public class TemplateController {
     public List<CertificateTemplate> mine(@AuthenticationPrincipal Customer customer) {
         return service.getByCustomer(customer.getId());
     }
+
+    @GetMapping("/{id}")
+    public CertificateTemplate getOne(
+            @AuthenticationPrincipal Customer customer,
+            @PathVariable Long id) {
+        return service.getById(customer, id);
+    }
 }

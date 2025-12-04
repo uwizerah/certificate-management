@@ -5,6 +5,8 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.util.List;
+import java.util.ArrayList;
 
 @Entity
 @Table(name = "certificate_templates")
@@ -26,4 +28,8 @@ public class CertificateTemplate {
     private Customer customer;
 
     private Instant createdAt = Instant.now();
+
+    @ElementCollection
+    @Column(name = "placeholder")
+    private List<String> placeholders = new ArrayList<>();
 }
