@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.nio.file.Files;
 import java.security.MessageDigest;
 import java.util.HexFormat;
 import java.util.Map;
@@ -50,11 +51,20 @@ public class CertificateService {
         cert.setIssuedTo(data.get("name"));
         cert.setDataJson(mapper.writeValueAsString(data));
         cert.setStatus("PENDING");
-        cert.setVerificationHash(hash(customer.getId() + "-" + templateId + "-" + data.toString()));
+        cert.setVerificationHash(hash(customer.getId() + "-" + templateId + "-" + System.nanoTime()));
 
         Certificate saved = certRepo.save(cert);
-        pdfService.generatePdfAsync(saved);
-        return saved;
+        pdfService.generatePdf(saved);
+
+        // Reload after PDF creation
+        Certificate ready = certRepo.findById(saved.getId())
+                .orElseThrow(() -> new RuntimeException("PDF generation failed"));
+
+        if (ready.getPdfPath() == null) {
+            throw new RuntimeException("PDF generation failed");
+        }
+
+        return ready;
     }
 
     public Resource downloadFor(Customer customer, Long id) throws Exception {
@@ -65,7 +75,16 @@ public class CertificateService {
             throw new RuntimeException("Unauthorized certificate access");
         }
 
+        if (cert.getPdfPath() == null || cert.getPdfPath().isBlank()) {
+            throw new RuntimeException("PDF has not yet been generated for this certificate");
+        }
+
         Path path = Path.of(cert.getPdfPath());
+
+        if (!Files.exists(path)) {
+            throw new RuntimeException("Certificate PDF file is missing on the server");
+        }
+
         return new UrlResource(path.toUri());
     }
 

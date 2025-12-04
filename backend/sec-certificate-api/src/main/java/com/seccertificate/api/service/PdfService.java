@@ -1,27 +1,24 @@
 package com.seccertificate.api.service;
 
-import com.lowagie.text.*;
-import com.lowagie.text.pdf.PdfWriter;
-import com.lowagie.text.html.simpleparser.HTMLWorker;
-import com.seccertificate.api.domain.Certificate;
-import com.seccertificate.api.repository.CertificateRepository;
-import org.springframework.scheduling.annotation.Async;
-import org.springframework.stereotype.Service;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
-import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
-import org.apache.commons.text.StringEscapeUtils; 
+import com.seccertificate.api.domain.Certificate;
+import com.seccertificate.api.repository.CertificateRepository;
+import org.apache.commons.text.StringEscapeUtils;
+import org.springframework.scheduling.annotation.Async;
+import org.springframework.stereotype.Service;
 
 import java.io.FileOutputStream;
-import java.io.StringReader;
-import java.nio.file.*;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.Map;
 
 @Service
 public class PdfService {
 
     private final CertificateRepository repo;
+    private final ObjectMapper mapper = new ObjectMapper();
 
     public PdfService(CertificateRepository repo) {
         this.repo = repo;
@@ -30,94 +27,183 @@ public class PdfService {
     // @Async
     // public void generatePdfAsync(Certificate cert) {
     //     try {
+    //         System.out.println("=== PDF GENERATION STARTED ===");
+    //         System.out.println("Certificate ID: " + cert.getId());
+
     //         Path folder = Path.of("storage");
     //         Files.createDirectories(folder);
     //         Path file = folder.resolve("cert_" + cert.getId() + ".pdf");
 
-    //         String html = cert.getTemplate().getHtmlTemplate();
-    //         Map<String,String> data = new ObjectMapper()
-    //                 .readValue(cert.getDataJson(), new TypeReference<>() {});
+    //         System.out.println("Output file path: " + file.toAbsolutePath());
 
-    //         // 1) Fill the template with data (This part is correct)
-    //         String filledHtml = html;
-    //         for (var e : data.entrySet()) {
-    //             filledHtml = filledHtml.replace("{{" + e.getKey() + "}}", e.getValue());
+    //         // 1) Load template + values
+    //         String template = cert.getTemplate().getHtmlTemplate();
+    //         System.out.println("Template length: " + (template == null ? "NULL" : template.length()));
+
+    //         Map<String, String> values = mapper.readValue(
+    //                 cert.getDataJson(),
+    //                 new TypeReference<>() {}
+    //         );
+
+    //         System.out.println("Data JSON: " + cert.getDataJson());
+    //         System.out.println("Parsed Values: " + values);
+
+    //         // 2) Fill placeholders safely
+    //         String filled = template == null ? "" : template;
+    //         for (var e : values.entrySet()) {
+    //             String safe = StringEscapeUtils.escapeHtml4(
+    //                     e.getValue() == null ? "" : e.getValue()
+    //             );
+    //             filled = filled.replace("{{" + e.getKey() + "}}", safe);
     //         }
 
-    //         // 2) Initialize PDF Document and Writer
-    //         Document doc = new Document();
-    //         PdfWriter writer = PdfWriter.getInstance(doc, new FileOutputStream(file.toFile()));
-    //         doc.open();
-            
-    //         // 3) Use HTMLWorker to parse the filled HTML/CSS and render it
-    //         HTMLWorker htmlWorker = new HTMLWorker(doc);
-    //         htmlWorker.parse(new StringReader(filledHtml)); // <-- Crucial step
+    //         System.out.println("Filled HTML preview (first 500 chars):");
+    //         System.out.println(filled.substring(0, Math.min(500, filled.length())));
 
-    //         // 4) Add the verification hash separately (optional, but good practice)
-    //         // doc.add(new Paragraph("Verification Hash: " + cert.getVerificationHash()));
+    //         // 3) Decide: full document vs fragment
+    //         String htmlDoc;
+    //         String cleaned = filled.replace("\uFEFF", "").trim();
+    //         String trimmed = cleaned.toLowerCase();
 
-    //         doc.close();
+    //         if (trimmed.startsWith("<!doctype") || trimmed.startsWith("<html")) {
+    //             System.out.println("Template is FULL DOCUMENT");
+    //             htmlDoc = cleaned;
+    //         } else {
+    //             System.out.println("Template is FRAGMENT -> wrapping");
+    //             htmlDoc =
+    //                     """
+    //                     <!DOCTYPE html>
+    //                     <html lang="en">
+    //                     <head>
+    //                         <meta charset="utf-8" />
+    //                         <meta name="viewport" content="width=device-width, initial-scale=1" />
+    //                     </head>
+    //                     <body>
+    //                     """ + filled + """
+    //                     </body>
+    //                     </html>
+    //                     """;
+    //         }
 
-    //         // 5) Update Certificate status and path
+    //         System.out.println("Final HTML (first 500 chars):");
+    //         System.out.println(htmlDoc.substring(0, Math.min(500, htmlDoc.length())));
+
+    //         // 4) Render to PDF
+    //         System.out.println("Rendering PDF...");
+
+    //         try (var out = new FileOutputStream(file.toFile())) {
+    //             new PdfRendererBuilder()
+    //                     .useFastMode()
+    //                     .withHtmlContent(htmlDoc, null)
+    //                     .toStream(out)
+    //                     .run();
+    //         }
+
+    //         System.out.println("PDF rendered SUCCESSFULLY");
+
+    //         // 5) Persist path + status
     //         cert.setPdfPath(file.toString());
     //         cert.setStatus("GENERATED");
     //         repo.save(cert);
 
+    //         System.out.println("PDF path saved in DB");
+    //         System.out.println("=== PDF GENERATION FINISHED ===");
+
     //     } catch (Exception e) {
+    //         System.out.println("=== PDF GENERATION FAILED ===");
+    //         e.printStackTrace();   // DO NOT remove yet
     //         throw new RuntimeException("PDF generation failed", e);
     //     }
     // }
 
-    @Async
-    public void generatePdfAsync(Certificate cert) {
+    public void generatePdf(Certificate cert) {
         try {
+            System.out.println("=== PDF GENERATION STARTED ===");
+            System.out.println("Certificate ID: " + cert.getId());
+
             Path folder = Path.of("storage");
             Files.createDirectories(folder);
             Path file = folder.resolve("cert_" + cert.getId() + ".pdf");
 
-            // 1) Fill placeholders safely
-            String tpl = cert.getTemplate().getHtmlTemplate();
-            Map<String,String> data = new ObjectMapper()
-                .readValue(cert.getDataJson(), new TypeReference<>() {});
-            String filled = tpl == null ? "" : tpl;
-            for (var e : data.entrySet()) {
-            // escape values so they can't break HTML
-            String safe = StringEscapeUtils.escapeHtml4(e.getValue() == null ? "" : e.getValue());
-            filled = filled.replace("{{" + e.getKey() + "}}", safe);
+            System.out.println("Output file path: " + file.toAbsolutePath());
+
+            // 1) Load template + values
+            String template = cert.getTemplate().getHtmlTemplate();
+            System.out.println("Template length: " + (template == null ? "NULL" : template.length()));
+
+            Map<String, String> values = mapper.readValue(
+                    cert.getDataJson(),
+                    new TypeReference<>() {}
+            );
+
+            System.out.println("Data JSON: " + cert.getDataJson());
+            System.out.println("Parsed Values: " + values);
+
+            // 2) Fill placeholders safely
+            String filled = template == null ? "" : template;
+            for (var e : values.entrySet()) {
+                String safe = StringEscapeUtils.escapeHtml4(
+                        e.getValue() == null ? "" : e.getValue()
+                );
+                filled = filled.replace("{{" + e.getKey() + "}}", safe);
             }
 
-            // 2) Ensure single well-formed document (strip BOM/whitespace before <html>)
-            filled = filled.stripLeading();
-            String htmlDoc =
-                """
-                <!DOCTYPE html>
-                <html lang="en">
-                <head>
-                    <meta charset="utf-8">
-                    <meta name="viewport" content="width=device-width, initial-scale=1">
-                </head>
-                <body>
-                """ + filled + """
-                </body>
-                </html>
-                """;
+            System.out.println("Filled HTML preview (first 500 chars):");
+            System.out.println(filled.substring(0, Math.min(500, filled.length())));
 
-            // 3) Render
-            try (var os = new FileOutputStream(file.toFile())) {
-            new PdfRendererBuilder()
-                .useFastMode()
-                .withHtmlContent(htmlDoc, null) // set base URL if you reference external images/fonts
-                .toStream(os)
-                .run();
+            // 3) Decide: full document vs fragment
+            String htmlDoc;
+            String cleaned = filled.replace("\uFEFF", "").trim();
+            String trimmed = cleaned.toLowerCase();
+
+            if (trimmed.startsWith("<!doctype") || trimmed.startsWith("<html")) {
+                System.out.println("Template is FULL DOCUMENT");
+                htmlDoc = cleaned;
+            } else {
+                System.out.println("Template is FRAGMENT -> wrapping");
+                htmlDoc =
+                        """
+                        <!DOCTYPE html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="utf-8" />
+                            <meta name="viewport" content="width=device-width, initial-scale=1" />
+                        </head>
+                        <body>
+                        """ + filled + """
+                        </body>
+                        </html>
+                        """;
             }
 
+            System.out.println("Final HTML (first 500 chars):");
+            System.out.println(htmlDoc.substring(0, Math.min(500, htmlDoc.length())));
+
+            // 4) Render to PDF
+            System.out.println("Rendering PDF...");
+
+            try (var out = new FileOutputStream(file.toFile())) {
+                new PdfRendererBuilder()
+                        .useFastMode()
+                        .withHtmlContent(htmlDoc, null)
+                        .toStream(out)
+                        .run();
+            }
+
+            System.out.println("PDF rendered SUCCESSFULLY");
+
+            // 5) Persist path + status
             cert.setPdfPath(file.toString());
             cert.setStatus("GENERATED");
             repo.save(cert);
 
+            System.out.println("PDF path saved in DB");
+            System.out.println("=== PDF GENERATION FINISHED ===");
+
         } catch (Exception e) {
+            System.out.println("=== PDF GENERATION FAILED ===");
+            e.printStackTrace();   // DO NOT remove yet
             throw new RuntimeException("PDF generation failed", e);
         }
     }
-
 }
