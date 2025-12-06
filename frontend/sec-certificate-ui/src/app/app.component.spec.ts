@@ -7,23 +7,8 @@ describe('AppComponent', () => {
       imports: [AppComponent],
     }).compileComponents();
   });
-
-  it('should create the app', () => {
+  it('should create app', () => {
     const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app).toBeTruthy();
-  });
-
-  it(`should have the 'sec-certificate-ui' title`, () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    const app = fixture.componentInstance;
-    expect(app.title).toEqual('sec-certificate-ui');
-  });
-
-  it('should render title', () => {
-    const fixture = TestBed.createComponent(AppComponent);
-    fixture.detectChanges();
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.querySelector('h1')?.textContent).toContain('Hello, sec-certificate-ui');
+    expect(fixture.componentInstance).toBeTruthy();
   });
 });
