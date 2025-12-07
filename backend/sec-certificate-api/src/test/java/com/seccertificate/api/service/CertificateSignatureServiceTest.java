@@ -118,4 +118,45 @@ class CertificateSignatureServiceTest {
 
         assertEquals("Cannot sign certificate without ID", ex.getMessage());
     }
+
+    //buildPayload fails when JSON serialization fails
+    @Test
+    void computeSignature_throws_whenPayloadBuildFails() throws Exception {
+
+        CertificateSignatureService service = newService();
+        Certificate cert = baseCert();
+
+        // Replace ObjectMapper with one that ALWAYS fails
+        var mapperField = CertificateSignatureService.class.getDeclaredField("objectMapper");
+        mapperField.setAccessible(true);
+
+        mapperField.set(service, new com.fasterxml.jackson.databind.ObjectMapper() {
+            @Override
+            public String writeValueAsString(Object value) throws com.fasterxml.jackson.core.JsonProcessingException {
+                throw new com.fasterxml.jackson.core.JsonProcessingException("BOOM") {};
+            }
+        });
+
+        IllegalStateException ex = assertThrows(
+                IllegalStateException.class,
+                () -> service.computeSignature(cert)
+        );
+
+        assertEquals("Signature computation failed", ex.getMessage());
+    }
+
+    //verify fails if signature manually changed
+    @Test
+    void verify_returnsFalse_whenSignatureModifiedManually() {
+
+        CertificateSignatureService service = newService();
+        Certificate cert = baseCert();
+
+        service.sign(cert);
+
+        // Force wrong signature
+        cert.setSignature("FAKE_SIGNATURE");
+
+        assertFalse(service.verify(cert));
+    }
 }
