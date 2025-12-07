@@ -17,7 +17,7 @@ A comprehensive certificate management solution built with Angular frontend and 
 - **Template System**: HTML-based certificate templates with placeholder replacement
 - **Certificate Generation**: Async PDF generation with storage
 - **Verification System**: Hash-based certificate authenticity verification
-- **Security**: API key authentication with CORS support
+- **Security**: API key authentication
 
 ## 🎯 Features
 
@@ -27,7 +27,7 @@ A comprehensive certificate management solution built with Angular frontend and 
 3. **Certificate Simulation**: Preview certificates before generation
 4. **Certificate Generation**: Generate PDF certificates via API
 5. **Certificate Download**: Secure PDF certificate retrieval
-6. **Verification**: Public verification of certificate authenticity
+6. **Verification**: Verification of certificate authenticity
 
 ### Security & Scalability
 - **Multi-tenancy**: Complete customer data isolation
@@ -89,7 +89,7 @@ A comprehensive certificate management solution built with Angular frontend and 
 
 4. **Build for production**:
    ```bash
-   npm run build
+   ng serve
    ```
 
 ## 📋 API Documentation
@@ -123,14 +123,14 @@ cd backend/sec-certificate-api
 ./mvnw test
 ```
 
-**Test Coverage**: JaCoCo generates coverage reports in `target/site/jacoco/`
+**Test Coverage**: JaCoCo generates coverage reports in `target/site/jacoco/` with the `mvn test jacoco:report` command
 
 ### Frontend Testing
 ```bash
 cd frontend/sec-certificate-ui
-npm test
+ng test
 ```
-**Test Coverage**: Coverage reports in `coverage/sec-certificate-ui/index.html/`
+**Test Coverage**: Coverage reports in `coverage/sec-certificate-ui/index.html/` with the `ng test --code-coverage` command
 
 ## 🔒 Security Features
 
@@ -142,7 +142,7 @@ npm test
 ### Certificate Security
 - Generated PDFs stored securely on filesystem
 - Verification hashes prevent tampering
-- Public verification endpoint for authenticity checks
+- Verification endpoint for authenticity checks
 
 ### API Security
 - API key authentication required for all operations
@@ -174,6 +174,8 @@ certificate-management/
 │   │   ├── domain/                  # JPA entities
 │   │   ├── dto/                     # Data transfer objects
 │   │   ├── security/                # Authentication
+│   │   ├── exception/               # Exception handling
+│   │   ├── util/                    # Utils
 │   │   └── config/                  # Configuration
 │   └── src/test/                    # Test suites
 └── frontend/sec-certificate-ui/     # Angular application
