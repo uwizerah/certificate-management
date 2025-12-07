@@ -1,35 +1,54 @@
 <div class="max-w-7xl mx-auto p-6 grid grid-cols-2 gap-8">
 
-  <!-- LEFT: INPUT FORM -->
-  <div class="bg-white rounded-xl border p-6 space-y-4">
+  <!-- LEFT: FORM -->
+  <div class="bg-white rounded-xl border p-6 space-y-4 shadow">
     <h2 class="text-xl font-semibold">Fill Certificate Fields</h2>
+    <p class="text-sm text-gray-500">All fields are required to generate the certificate.</p>
 
     <div *ngFor="let key of template?.placeholders">
       <label class="block text-sm font-medium mb-1 capitalize">
         {{ key.replace('_', ' ') }}
+        <span class="text-red-500">*</span>
       </label>
 
       <input
-        class="w-full border rounded-lg px-3 py-2"
         [(ngModel)]="values[key]"
         (input)="updatePreview()"
-        [placeholder]="'Enter ' + key"
+        class="w-full border rounded-lg px-3 py-2 outline-none transition"
+        [class.border-red-500]="!values[key].trim()"
+        [class.focus:ring-red-400]="!values[key].trim()"
+        [class.border-gray-300]="values[key].trim()"
+        [class.focus:ring-blue-400]="values[key].trim()"
+        placeholder="Required"
       />
+
+      <p *ngIf="!values[key].trim()" class="text-xs text-red-500 mt-1">
+        This field is required
+      </p>
     </div>
+
     <button
-      class="w-full bg-blue-600 text-white rounded-lg py-2 mt-4 hover:bg-blue-700 transition"
+      class="w-full rounded-lg py-2 mt-4 transition font-medium"
+      [disabled]="!allFieldsFilled()"
+      [class.bg-blue-600]="allFieldsFilled()"
+      [class.hover:bg-blue-700]="allFieldsFilled()"
+      [class.text-white]="allFieldsFilled()"
+      [class.bg-gray-300]="!allFieldsFilled()"
+      [class.cursor-not-allowed]="!allFieldsFilled()"
       (click)="generate()"
     >
-      Generate PDF
+      Generate Certificate PDF
     </button>
   </div>
 
   <!-- RIGHT: LIVE PREVIEW -->
-  <div class="bg-gray-100 rounded-xl p-4 overflow-auto">
+  <div class="bg-gray-100 rounded-xl p-4 overflow-auto shadow">
+    <div class="text-sm text-gray-500 mb-2">Live preview</div>
+
     <iframe
       [srcdoc]="previewHtml"
       class="w-full h-[600px] rounded-lg border bg-white"
-      sandbox="allow-same-origin" 
+      sandbox="allow-same-origin"
     ></iframe>
   </div>
 

@@ -61,4 +61,17 @@ export class ApiService {
   createCustomer(body: CreateCustomerRequest): Observable<CustomerResponse> {
     return this.http.post<CustomerResponse>(`${BASE}/customers`, body);
   }
+
+  setApiKey(key: string) {
+    localStorage.setItem('api_key', key);
+  }
+
+  getApiKey(): string | null {
+    return localStorage.getItem('api_key');
+  }
+
+  logout() {
+    localStorage.removeItem('api_key');
+  }
+
 }

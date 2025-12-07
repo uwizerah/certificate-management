@@ -48,11 +48,19 @@ public class CertificateService {
             throw new RuntimeException("Unauthorized template usage");
         }
 
+        //ENFORCE PLACEHOLDERS
+        List<String> required = template.getPlaceholders();
+        for (String key : required) {
+            if (!data.containsKey(key) || data.get(key) == null || data.get(key).trim().isEmpty()) {
+                throw new IllegalArgumentException("Missing required field: " + key);
+            }
+        }
+
         // 1. Save base certificate
         Certificate cert = new Certificate();
         cert.setCustomer(customer);
         cert.setTemplate(template);
-        cert.setIssuedTo("N/A");
+        cert.setIssuedTo(inferIssuedTo(data));
         cert.setDataJson(mapper.writeValueAsString(data));
         cert.setStatus("PENDING");
         cert.setVerificationHash(hash(customer.getId() + "-" + templateId + "-" + System.nanoTime()));
@@ -70,7 +78,7 @@ public class CertificateService {
             throw new RuntimeException("PDF not generated");
         }
 
-        //4. SIGN AFTER FINAL STATE
+        // 4. SIGN AFTER FINAL STATE
         signatureService.sign(finalCert);
         certRepo.save(finalCert);
 
@@ -107,5 +115,24 @@ public class CertificateService {
                 MessageDigest.getInstance("SHA-256")
                         .digest(input.getBytes(StandardCharsets.UTF_8))
         );
+    }
+
+    private String inferIssuedTo(Map<String, String> data) {
+
+        List<String> candidateKeys = List.of(
+            "name", "recipient", "student", "client",
+            "full_name", "fullname", "user", "candidate", "person"
+        );
+
+        for (String key : candidateKeys) {
+            for (String actual : data.keySet()) {
+                if (actual.equalsIgnoreCase(key)) {
+                    return data.get(actual);
+                }
+            }
+        }
+
+        // Fallback if nothing semantic is found
+        return "UNKNOWN";
     }
 }

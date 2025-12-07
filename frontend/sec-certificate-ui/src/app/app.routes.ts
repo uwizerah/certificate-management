@@ -2,19 +2,18 @@ import { Routes } from '@angular/router';
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 
-import { ApiKeyComponent } from '../app/features/auth/api-key.component';
+import { ApiKeyComponent } from './features/auth/api-key.component';
 import { DashboardComponent } from './features/dashboard/dashboard.component';
 import { TemplateListComponent } from './features/templates/template-list.component';
 import { TemplateEditorComponent } from './features/templates/template-editor.component';
 import { VerifyComponent } from './features/verify/verify.component';
-// import { GenerateComponent } from './features/certificates/generate.component';
 import { CertificateListComponent } from './features/certificates/list.component';
-// import { CustomerComponent } from './features/customers/customer.component';
 import { ApiKeyService } from './core/auth/api-key.service';
 import { TemplateGenerateComponent } from './features/templates/template-generate.component';
 
 export const routes: Routes = [
 
+  // Root → dashboard
   { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
 
   { path: 'auth', component: ApiKeyComponent },
@@ -33,15 +32,20 @@ export const routes: Routes = [
       }
     }],
     children: [
-      { path: '', component: TemplateListComponent }, // default page
+
+      //Redirect dashboard root → templates
+      { path: '', redirectTo: 'templates', pathMatch: 'full' },
+
+      // Templates
       { path: 'templates', component: TemplateListComponent },
-      // { path: 'templates/new', component: TemplateEditorComponent },
       { path: 'templates/:id', component: TemplateEditorComponent },
       { path: 'templates/:id/generate', component: TemplateGenerateComponent },
-      // { path: 'certificates/generate', component: GenerateComponent },
+
+      // Certificates
       { path: 'certificates/list', component: CertificateListComponent },
-      { path: 'verify', component: VerifyComponent },
-      // { path: 'customers', component: CustomerComponent }
+
+      // Verify inside dashboard
+      { path: 'verify', component: VerifyComponent }
     ]
   },
 

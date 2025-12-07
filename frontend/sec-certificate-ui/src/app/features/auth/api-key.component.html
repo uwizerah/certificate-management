@@ -7,10 +7,16 @@
   <!-- Field -->
   <label for="api-key">API Key</label>
 
-  <input 
+  <input
     id="api-key"
     [(ngModel)]="key"
     placeholder="Paste your API key here"
+    type="password"
+    autocomplete="new-password"
+    autocorrect="off"
+    autocapitalize="off"
+    spellcheck="false"
+    inputmode="none"
   />
 
   <!-- Button -->
@@ -28,7 +34,7 @@
 
   <!-- Helper text -->
   <p style="margin-top: 10px; font-size: 12px; text-align: center; color: #6b7280;">
-    🔐 Your API key is securely validated
+    Your API key is securely validated
   </p>
 
 </div>

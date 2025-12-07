@@ -15,7 +15,7 @@ import { ApiService } from '../../core/api/api.service';
       [(ngModel)]="hash"
       placeholder="Enter verification hash"
       (input)="reset()"
-      />
+    />
 
     <button
       (click)="verify()"
@@ -30,20 +30,22 @@ import { ApiService } from '../../core/api/api.service';
     <div *ngIf="result" class="result">
 
       <h3 [class.valid]="result.valid" [class.invalid]="!result.valid">
-        {{ result.valid ? '✅ Certificate is valid' : '❌ Invalid certificate' }}
+        {{ result.valid ? 'Certificate is valid' : 'Invalid certificate' }}
       </h3>
 
       <p class="msg">{{ result.message }}</p>
 
-      <div class="details">
-        <p><b>Issued To:</b> {{ result.issuedTo || 'N/A' }}</p>
+      <div class="details" *ngIf="result.valid">
+        <p><b>Issued To:</b> {{ result.issuedTo }}</p>
         <p><b>Date Issued:</b> {{ result.issuedAt | date:'medium' }}</p>
         <p><b>Status:</b> {{ result.status }}</p>
         <p><b>Template:</b> {{ result.templateName }}</p>
         <p><b>Customer:</b> {{ result.customerName }}</p>
       </div>
 
-      <p class="hash">Hash: {{ result.verificationHash }}</p>
+      <p class="hash" *ngIf="result.valid">
+        Hash: {{ result.verificationHash }}
+      </p>
 
     </div>
 
@@ -59,6 +61,13 @@ import { ApiService } from '../../core/api/api.service';
       box-shadow: 0 4px 20px rgba(0,0,0,.05);
     }
 
+    h2 {
+      margin-bottom: 12px;
+      font-size: 22px;
+      font-weight: 700;
+      color: #0f172a;
+    }
+
     input {
       width: 100%;
       padding: 12px;
@@ -71,14 +80,18 @@ import { ApiService } from '../../core/api/api.service';
     button {
       width: 100%;
       padding: 12px;
+      margin-top: 12px;
       background: #4f46e5;
       color: white;
       border: none;
       border-radius: 8px;
       font-weight: 600;
+      cursor: pointer;
     }
+
     button:disabled {
       background: #aaa;
+      cursor: not-allowed;
     }
 
     .error {
@@ -96,10 +109,12 @@ import { ApiService } from '../../core/api/api.service';
 
     .valid {
       color: green;
+      font-weight: 700;
     }
 
     .invalid {
       color: red;
+      font-weight: 700;
     }
 
     .details p {

@@ -36,6 +36,6 @@ describe('AuthGuard', () => {
   it('should block access when key missing', () => {
     keys.clear();
     expect(guard.canActivate(dummyRoute, dummyState)).toBeFalse();
-    expect(router.navigate).toHaveBeenCalledWith(['/login']);
+    expect(router.navigate).toHaveBeenCalledWith(['/auth']);
   });
 });

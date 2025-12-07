@@ -22,7 +22,10 @@ export class TemplateListComponent implements OnInit {
   load() {
     this.loading = true;
     this.api.getTemplates().subscribe(res => {
-      this.templates = res;
+      this.templates = res.sort(
+        (a: any, b: any) =>
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+      );
       this.loading = false;
     });
   }

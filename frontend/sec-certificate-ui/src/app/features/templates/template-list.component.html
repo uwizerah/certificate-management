@@ -45,15 +45,9 @@
 
       <div class="mt-4 flex gap-2">
         <a
-          [routerLink]="['/dashboard/templates', t.id]"
-          class="inline-flex items-center rounded-lg border px-3 py-2 text-sm hover:bg-gray-50">
-          Open
-        </a>
-
-        <a
           [routerLink]="['/dashboard/templates', t.id, 'generate']"
-          class="inline-flex items-center rounded-lg bg-black text-white px-3 py-2 text-sm hover:bg-gray-900">
-          Generate
+          class="mt-2 w-full text-center inline-flex justify-center items-center rounded-lg bg-blue-600 text-white px-4 py-3 text-sm font-semibold hover:bg-blue-700 transition">
+            Generate Certificate
         </a>
       </div>
 

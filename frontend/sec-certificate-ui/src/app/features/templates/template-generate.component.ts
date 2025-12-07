@@ -4,6 +4,7 @@ import { ActivatedRoute } from '@angular/router';
 import { ApiService } from '../../core/api/api.service';
 import { FormsModule } from '@angular/forms';
 import { DomSanitizer } from '@angular/platform-browser';
+import { Router } from '@angular/router';
 
 @Component({
   standalone: true,
@@ -20,18 +21,17 @@ export class TemplateGenerateComponent implements OnInit {
   constructor(
     private route: ActivatedRoute,
     private api: ApiService,
-    private sanitizer: DomSanitizer
+    private sanitizer: DomSanitizer,
+    private router: Router
   ) {}
-
 
   ngOnInit() {
     this.templateId = Number(this.route.snapshot.paramMap.get('id'));
 
-    // fetch template (must include placeholders + htmlTemplate)
     this.api.getTemplate(this.templateId).subscribe(t => {
       this.template = t;
 
-      // prepare empty fields for placeholders
+      // Initialize fields
       t.placeholders.forEach((p: string) => {
         this.values[p] = '';
       });
@@ -49,13 +49,31 @@ export class TemplateGenerateComponent implements OnInit {
     }
 
     this.previewHtml = this.sanitizer.bypassSecurityTrustHtml(html) as any;
+  }
 
+  //EQUIRED PLACEHOLDER ENFORCEMENT
+  allFieldsFilled(): boolean {
+    return Object.values(this.values).every(v => v && v.trim().length > 0);
   }
 
   generate() {
-    this.api.generateCertificate(this.templateId, { data: this.values }).subscribe(res => {
-        alert('Certificate generated successfully!');
-    });
-  }
 
+    if (!this.allFieldsFilled()) {
+      alert("Please fill all required fields before generating the certificate.");
+      return;
+    }
+
+    this.api.generateCertificate(this.templateId, { data: this.values })
+      .subscribe({
+        next: () => {
+          alert("Certificate generated successfully!");
+          this.router.navigate(['/dashboard/certificates/list']);
+        },
+
+        error: err => {
+          const msg = err?.error?.message || "Certificate generation failed";
+          alert(msg);
+        }
+      });
+  }
 }

@@ -20,7 +20,13 @@ export class ApiKeyService {
     this.apiKey.set(key);
   }
   clear() {
-    if (this.isBrowser) { try { localStorage.removeItem(KEY); } catch {} }
+    if (this.isBrowser) {
+      try {
+        localStorage.removeItem('sec.apiKey');
+        localStorage.removeItem('API_KEY');
+        localStorage.removeItem('SEC_CERT_API_KEY');
+      } catch {}
+    }
     this.apiKey.set(null);
   }
   get(): string | null { return this.apiKey(); }

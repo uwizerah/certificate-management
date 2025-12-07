@@ -15,14 +15,13 @@ import { CertificateSummary } from '../../core/api/models';
         <h2>Issued Certificates</h2>
         <p>Track and manage generated certificates.</p>
       </div>
-      <button class="export">Export CSV</button>
     </div>
 
     <div class="table-card">
 
       <input
         class="search"
-        placeholder="Search by ID or Date..."
+        placeholder="Search by Issued To..."
         [(ngModel)]="query"
       />
 
@@ -30,6 +29,7 @@ import { CertificateSummary } from '../../core/api/models';
         <thead>
           <tr>
             <th>Certificate ID</th>
+            <th>Issued To</th>
             <th>Issued On</th>
             <th>Status</th>
             <th>Actions</th>
@@ -39,17 +39,32 @@ import { CertificateSummary } from '../../core/api/models';
         <tbody>
           <tr *ngFor="let c of filtered()">
             <td>C-{{ c.id }}</td>
+            <td>{{ c.issuedTo || 'UNKNOWN' }}</td>
             <td>{{ c.createdAt | date }}</td>
-            <td><span class="badge">Active</span></td>
+
+            <!-- ✅ Status with colors -->
             <td>
-              <button class="download" (click)="download(c.id)">
+              <span class="badge"
+                    [ngClass]="{
+                      'pending': c.status === 'PENDING',
+                      'generated': c.status === 'GENERATED',
+                      'revoked': c.status === 'REVOKED'
+                    }">
+                {{ c.status }}
+              </span>
+            </td>
+
+            <td>
+              <button class="download"
+                      [disabled]="c.status !== 'GENERATED'"
+                      (click)="download(c.id)">
                 Download
               </button>
             </td>
           </tr>
 
           <tr *ngIf="filtered().length === 0">
-            <td colspan="4" class="empty">
+            <td colspan="5" class="empty">
               No certificates found.
             </td>
           </tr>
@@ -84,14 +99,6 @@ import { CertificateSummary } from '../../core/api/models';
   font-size: 14px;
 }
 
-.export {
-  padding: 7px 12px;
-  background: white;
-  border: 1px solid #cbd5e1;
-  border-radius: 6px;
-  cursor: pointer;
-}
-
 .table-card {
   background: white;
   border-radius: 12px;
@@ -100,7 +107,7 @@ import { CertificateSummary } from '../../core/api/models';
 }
 
 .search {
-  width: 250px;
+  width: 320px;
   padding: 7px 10px;
   border-radius: 8px;
   border: 1px solid #e5e7eb;
@@ -124,14 +131,34 @@ td {
   border-top: 1px solid #e5e7eb;
 }
 
+/* ✅ Status badges */
 .badge {
-  background: #dcfce7;
-  color: #166534;
   font-size: 12px;
-  padding: 3px 8px;
+  font-weight: 600;
+  padding: 4px 10px;
   border-radius: 999px;
+  display: inline-block;
 }
 
+/* GENERATED = green */
+.generated {
+  background: #dcfce7;
+  color: #166534;
+}
+
+/* PENDING = amber */
+.pending {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+/* REVOKED = red */
+.revoked {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
+/* Download button */
 .download {
   background: #2563eb;
   color: white;
@@ -143,6 +170,11 @@ td {
 
 .download:hover {
   background: #1e40af;
+}
+
+.download:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
 }
 
 .empty {
@@ -165,9 +197,9 @@ export class CertificateListComponent implements OnInit {
   }
 
   filtered() {
+    const q = this.query.toLowerCase();
     return this.certs.filter(c =>
-      c.id.toString().includes(this.query) ||
-      c.createdAt.toLowerCase().includes(this.query.toLowerCase())
+      (c.issuedTo || '').toLowerCase().includes(q)
     );
   }
 

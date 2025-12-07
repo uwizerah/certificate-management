@@ -6,7 +6,6 @@ import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.seccertificate.api.domain.Certificate;
 import com.seccertificate.api.repository.CertificateRepository;
 import org.apache.commons.text.StringEscapeUtils;
-import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 import java.io.FileOutputStream;
@@ -38,19 +37,12 @@ public class PdfService {
             Files.createDirectories(folder);
             Path file = folder.resolve("cert_" + cert.getId() + ".pdf");
 
-            System.out.println("Output file path: " + file.toAbsolutePath());
-
             // 1) Load template + values
             String template = cert.getTemplate().getHtmlTemplate();
-            System.out.println("Template length: " + (template == null ? "NULL" : template.length()));
-
             Map<String, String> values = mapper.readValue(
                     cert.getDataJson(),
                     new TypeReference<>() {}
             );
-
-            System.out.println("Data JSON: " + cert.getDataJson());
-            System.out.println("Parsed Values: " + values);
 
             // 2) Fill placeholders safely
             String filled = template == null ? "" : template;
@@ -61,26 +53,37 @@ public class PdfService {
                 filled = filled.replace("{{" + e.getKey() + "}}", safe);
             }
 
-            System.out.println("Filled HTML preview (first 500 chars):");
-            System.out.println(filled.substring(0, Math.min(500, filled.length())));
+            //3) Add verification block (hash + URL)
+            String verifyBlock =
+                "<div style='margin-top:30px;font-size:10px;text-align:center;color:#555'>" +
+                "Verification Code:<br/>" +
+                "<b>" + cert.getVerificationHash() + "</b><br/><br/>" +
+                "Verify at:<br/>" +
+                "<a href='http://localhost:4200/dashboard/verify'>" +
+                "http://localhost:4200/dashboard/verify" +
+                "</a>" +
+                "</div>";
 
-            // 3) Decide: full document vs fragment
+            //INJECT INSIDE BODY (not after HTML!)
+            if (filled.toLowerCase().contains("</body>")) {
+                filled = filled.replace("</body>", verifyBlock + "</body>");
+            } else {
+                filled += verifyBlock;   // safe for fragment templates
+            }
+
+            // 4) Wrap if needed
             String htmlDoc;
             String cleaned = filled.replace("\uFEFF", "").trim();
             String trimmed = cleaned.toLowerCase();
 
             if (trimmed.startsWith("<!doctype") || trimmed.startsWith("<html")) {
-                System.out.println("Template is FULL DOCUMENT");
                 htmlDoc = cleaned;
             } else {
-                System.out.println("Template is FRAGMENT -> wrapping");
-                htmlDoc =
-                        """
+                htmlDoc = """
                         <!DOCTYPE html>
                         <html lang="en">
                         <head>
                             <meta charset="utf-8" />
-                            <meta name="viewport" content="width=device-width, initial-scale=1" />
                         </head>
                         <body>
                         """ + filled + """
@@ -89,12 +92,7 @@ public class PdfService {
                         """;
             }
 
-            System.out.println("Final HTML (first 500 chars):");
-            System.out.println(htmlDoc.substring(0, Math.min(500, htmlDoc.length())));
-
-            // 4) Render to PDF
-            System.out.println("Rendering PDF...");
-
+            // 5) Render to PDF
             try (var out = new FileOutputStream(file.toFile())) {
                 new PdfRendererBuilder()
                         .useFastMode()
@@ -103,24 +101,21 @@ public class PdfService {
                         .run();
             }
 
-            System.out.println("PDF rendered SUCCESSFULLY");
-
-            // 5) Persist path + status
+            // 6) Persist path + status
             cert.setPdfPath(file.toString());
             cert.setStatus("GENERATED");
 
-            // 6) Cryptographically sign certificate
+            // 7) Cryptographically sign certificate
             signatureService.sign(cert);
 
-            // 7) Save signed certificate
+            // 8) Save signed certificate
             repo.save(cert);
 
-            System.out.println("PDF path saved & certificate signed");
-            System.out.println("=== PDF GENERATION FINISHED ===");
+            System.out.println("PDF generated with verification hash embedded");
 
         } catch (Exception e) {
-            System.out.println("=== PDF GENERATION FAILED ===");
-            e.printStackTrace();   // DO NOT remove yet
+            System.out.println("PDF generation failed");
+            e.printStackTrace();
             throw new RuntimeException("PDF generation failed", e);
         }
     }
