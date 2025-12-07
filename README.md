@@ -57,6 +57,7 @@ A comprehensive certificate management solution built with Angular frontend and 
    spring.datasource.url=jdbc:postgresql://localhost:5432/certificates
    spring.datasource.username=your_username
    spring.datasource.password=your_password
+   SIGNATURE_SECRET=your_secure_random_value
    ```
 
 3. **Run the application**:
@@ -99,20 +100,20 @@ All API requests require an `x-api-key` header with the customer's API key.
 ### Endpoints
 
 #### Customer Management
-- `POST /api/customers` - Onboard new customer
-- `GET /api/customers` - List all customers (admin)
+- `POST /api/customers` - Onboard new customer (backend only - admin)
+- `GET /api/customers` - List all customers (backend only - admin)
 
 #### Template Management
-- `POST /api/templates` - Create certificate template
+- `POST /api/templates` - Create a certificate template
 - `GET /api/templates` - List customer's templates
 
 #### Certificate Operations
-- `POST /api/certificates/simulate` - Simulate certificate generation
-- `POST /api/certificates/generate` - Generate PDF certificate
-- `GET /api/certificates/{id}/download` - Download PDF certificate
+- `POST /api/certificates/generate?{templatedI}` - Generate and persist a signed PDF certificate
+- `POST /api/certificates` - List certificates for the authenticated customer
+- `GET /api/certificates/{id}/download` - Download a generated PDF certificate
 
 #### Verification
-- `GET /api/verify/{hash}` - Verify certificate authenticity (public)
+- `GET /api/verify/{hash}` - Verify certificate authenticity
 
 ## 🧪 Testing
 
@@ -129,6 +130,7 @@ cd backend/sec-certificate-api
 cd frontend/sec-certificate-ui
 npm test
 ```
+**Test Coverage**: Coverage reports in `coverage/sec-certificate-ui/index.html/`
 
 ## 🔒 Security Features
 
@@ -178,7 +180,6 @@ certificate-management/
     ├── src/app/
     │   ├── core/                    # Core services
     │   ├── features/                # Feature modules
-    │   └── layout/                  # Layout components
     └── public/                      # Static assets
 ```
 
