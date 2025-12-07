@@ -18,8 +18,11 @@ class PdfServiceTest {
     @Mock
     CertificateRepository repo;
 
+    @Mock
+    CertificateSignatureService signatureService;
+
     @InjectMocks
-    PdfService service;
+    PdfService service;    //Injects BOTH repo + signatureService
 
     @Test
     void generatePdf_shouldSetPathAndStatus_andSave() {
@@ -31,8 +34,10 @@ class PdfServiceTest {
         cert.setId(1L);
         cert.setTemplate(template);
         cert.setDataJson("{\"name\":\"Alice\"}");
+        cert.setVerificationHash("hash-123"); 
 
         when(repo.save(any())).thenAnswer(i -> i.getArgument(0));
+        doNothing().when(signatureService).sign(any());
 
         // Act
         service.generatePdf(cert);
@@ -40,6 +45,7 @@ class PdfServiceTest {
         // Assert
         assertEquals("GENERATED", cert.getStatus());
         assertNotNull(cert.getPdfPath());
+        verify(signatureService, times(1)).sign(cert);
         verify(repo, times(1)).save(cert);
     }
 

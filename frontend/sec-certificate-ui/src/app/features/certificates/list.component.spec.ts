@@ -47,22 +47,55 @@ describe('CertificateListComponent', () => {
   // --------------------
   // FILTERING
   // --------------------
-  it('should filter by certificate id', () => {
-    component.query = '1';
+  it('should filter by issuedTo', () => {
+    component.certs = [
+      {
+        id: 1,
+        issuedTo: 'Alice',
+        createdAt: '2024-01-01',
+        status: 'GENERATED',
+        verificationHash: 'hash1'
+      },
+      {
+        id: 2,
+        issuedTo: 'Bob',
+        createdAt: '2024-02-01',
+        status: 'GENERATED',
+        verificationHash: 'hash2'
+      }
+    ];
 
-    const result = component.filtered();
-
-    const ids = result.map(c => c.id);
-    expect(ids).toContain(1);
-  });
-
-  it('should filter by created date', () => {
-    component.query = '2024-02';
+    component.query = 'bob';
 
     const result = component.filtered();
 
     expect(result.length).toBe(1);
-    expect(result[0].id).toBe(2);
+    expect(result[0].issuedTo).toBe('Bob');
+  });
+
+  it('should NOT filter by created date (only issuedTo)', () => {
+    component.certs = [
+      {
+        id: 1,
+        issuedTo: 'Alice',
+        createdAt: '2023-12-05',
+        status: 'GENERATED',
+        verificationHash: 'hash1'
+      },
+      {
+        id: 2,
+        issuedTo: 'Bob',
+        createdAt: '2024-02-10',
+        status: 'GENERATED',
+        verificationHash: 'hash2'
+      }
+    ];
+
+    component.query = '2024-02';
+
+    const result = component.filtered();
+
+    expect(result.length).toBe(0); // should NOT match anything
   });
 
   it('should return empty array if no matches', () => {

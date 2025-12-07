@@ -1,6 +1,6 @@
 package com.seccertificate.api.service;
 
-import com.seccertificate.api.domain.Certificate;
+import com.seccertificate.api.domain.*;
 import com.seccertificate.api.repository.CertificateRepository;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,13 +26,22 @@ class VerificationServiceTest {
     @InjectMocks
     VerificationService service;
 
+    //VALID CERTIFICATE
     @Test
     void verify_shouldReturnValid_whenHashExists_andSignatureValid() {
+
+        Customer customer = new Customer();
+        customer.setName("ACME");
+
+        CertificateTemplate template = new CertificateTemplate();
+        template.setName("Completion");
 
         Certificate cert = new Certificate();
         cert.setIssuedTo("John");
         cert.setStatus("GENERATED");
         cert.setCreatedAt(Instant.now());
+        cert.setCustomer(customer);
+        cert.setTemplate(template);
 
         when(repo.findByVerificationHash("abc")).thenReturn(Optional.of(cert));
         when(signatureService.verify(cert)).thenReturn(true);
@@ -42,17 +51,32 @@ class VerificationServiceTest {
         assertTrue(result.isValid());
         assertFalse(result.isTampered());
         assertEquals("John", result.getIssuedTo());
+        assertEquals("GENERATED", result.getStatus());
+        assertEquals("ACME", result.getCustomerName());
+        assertEquals("Completion", result.getTemplateName());
+        assertEquals("abc", result.getVerificationHash());
+        assertNotNull(result.getIssuedAt());
 
         verify(repo).findByVerificationHash("abc");
         verify(signatureService).verify(cert);
     }
 
+    //TAMPERED CERTIFICATE
     @Test
     void verify_shouldReturnTampered_whenSignatureInvalid() {
 
+        Customer customer = new Customer();
+        customer.setName("XYZ Corp");
+
+        CertificateTemplate template = new CertificateTemplate();
+        template.setName("Training");
+
         Certificate cert = new Certificate();
         cert.setIssuedTo("Mary");
-        cert.setStatus("GENERATED");
+        cert.setStatus("REVOKED");
+        cert.setCreatedAt(Instant.now());
+        cert.setCustomer(customer);
+        cert.setTemplate(template);
 
         when(repo.findByVerificationHash("bad-sig")).thenReturn(Optional.of(cert));
         when(signatureService.verify(cert)).thenReturn(false);
@@ -62,11 +86,16 @@ class VerificationServiceTest {
         assertFalse(result.isValid());
         assertTrue(result.isTampered());
         assertEquals("Mary", result.getIssuedTo());
+        assertEquals("bad-sig", result.getVerificationHash());
+        assertEquals("REVOKED", result.getStatus());
+        assertEquals("XYZ Corp", result.getCustomerName());
+        assertEquals("Training", result.getTemplateName());
 
         verify(repo).findByVerificationHash("bad-sig");
         verify(signatureService).verify(cert);
     }
 
+    //NOT FOUND CERTIFICATE
     @Test
     void verify_shouldReturnNotFound_whenNoCertificate() {
 
@@ -77,6 +106,11 @@ class VerificationServiceTest {
         assertFalse(result.isValid());
         assertFalse(result.isTampered());
         assertEquals("No certificate found for this verification hash.", result.getMessage());
+        assertEquals("missing", result.getVerificationHash());
+        assertNull(result.getIssuedTo());
+        assertNull(result.getStatus());
+        assertNull(result.getTemplateName());
+        assertNull(result.getCustomerName());
 
         verify(repo).findByVerificationHash("missing");
         verifyNoInteractions(signatureService);

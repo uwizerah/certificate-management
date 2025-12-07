@@ -67,10 +67,10 @@ describe('TemplateGenerateComponent', () => {
   });
 
   it('should call API on generate()', () => {
+    component.values['name'] = 'John';
     component.generate();
-
     expect(api.generateCertificate).toHaveBeenCalledWith(1, {
-      data: component.values
+      data: { name: 'John' }
     });
   });
 });

@@ -42,7 +42,7 @@ import { CertificateSummary } from '../../core/api/models';
             <td>{{ c.issuedTo || 'UNKNOWN' }}</td>
             <td>{{ c.createdAt | date }}</td>
 
-            <!-- ✅ Status with colors -->
+            <!-- Status with colors -->
             <td>
               <span class="badge"
                     [ngClass]="{
@@ -131,7 +131,7 @@ td {
   border-top: 1px solid #e5e7eb;
 }
 
-/* ✅ Status badges */
+/* Status badges */
 .badge {
   font-size: 12px;
   font-weight: 600;
