@@ -18,10 +18,15 @@ import java.util.Map;
 public class PdfService {
 
     private final CertificateRepository repo;
+    private final CertificateSignatureService signatureService;
     private final ObjectMapper mapper = new ObjectMapper();
 
-    public PdfService(CertificateRepository repo) {
+    public PdfService(
+            CertificateRepository repo,
+            CertificateSignatureService signatureService
+    ) {
         this.repo = repo;
+        this.signatureService = signatureService;
     }
 
     public void generatePdf(Certificate cert) {
@@ -103,9 +108,14 @@ public class PdfService {
             // 5) Persist path + status
             cert.setPdfPath(file.toString());
             cert.setStatus("GENERATED");
+
+            // 6) Cryptographically sign certificate
+            signatureService.sign(cert);
+
+            // 7) Save signed certificate
             repo.save(cert);
 
-            System.out.println("PDF path saved in DB");
+            System.out.println("PDF path saved & certificate signed");
             System.out.println("=== PDF GENERATION FINISHED ===");
 
         } catch (Exception e) {

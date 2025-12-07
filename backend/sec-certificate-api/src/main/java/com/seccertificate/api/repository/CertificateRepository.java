@@ -6,15 +6,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import java.util.Optional;
 import java.util.List;
 
-public interface CertificateRepository
-        extends JpaRepository<Certificate, Long> {
-
+public interface CertificateRepository extends JpaRepository<Certificate, Long> {
     // For verification API
     boolean existsByVerificationHash(String hash);
+    Optional<Certificate> findByVerificationHash(String verificationHash);
 
-    // Optional: fetch certificate by hash if needed later
-    Optional<Certificate> findByVerificationHash(String hash);
-
+    Optional<Certificate> findByIdAndCustomer_Id(Long id, Long customerId);
     List<Certificate> findByCustomerIdOrderByCreatedAtDesc(Long customerId);
 
 }

@@ -7,22 +7,143 @@ import { ApiService } from '../../core/api/api.service';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-  <h2>Verify Certificate</h2>
+  <div class="verify-container">
 
-  <input [(ngModel)]="hash" placeholder="Verification hash"/>
-  <button (click)="verify()">Check</button>
+    <h2>Verify Certificate</h2>
 
-  <pre *ngIf="result">{{ result | json }}</pre>
-  `
+    <input
+      [(ngModel)]="hash"
+      placeholder="Enter verification hash"
+      (input)="reset()"
+      />
+
+    <button
+      (click)="verify()"
+      [disabled]="!hash || loading">
+      {{ loading ? 'Checking...' : 'Verify' }}
+    </button>
+
+    <!-- Error -->
+    <p class="error" *ngIf="error">{{ error }}</p>
+
+    <!-- Result -->
+    <div *ngIf="result" class="result">
+
+      <h3 [class.valid]="result.valid" [class.invalid]="!result.valid">
+        {{ result.valid ? '✅ Certificate is valid' : '❌ Invalid certificate' }}
+      </h3>
+
+      <p class="msg">{{ result.message }}</p>
+
+      <div class="details">
+        <p><b>Issued To:</b> {{ result.issuedTo || 'N/A' }}</p>
+        <p><b>Date Issued:</b> {{ result.issuedAt | date:'medium' }}</p>
+        <p><b>Status:</b> {{ result.status }}</p>
+        <p><b>Template:</b> {{ result.templateName }}</p>
+        <p><b>Customer:</b> {{ result.customerName }}</p>
+      </div>
+
+      <p class="hash">Hash: {{ result.verificationHash }}</p>
+
+    </div>
+
+  </div>
+  `,
+  styles: [`
+    .verify-container {
+      max-width: 480px;
+      margin: auto;
+      padding: 24px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0,0,0,.05);
+    }
+
+    input {
+      width: 100%;
+      padding: 12px;
+      font-family: monospace;
+      border-radius: 8px;
+      border: 1px solid #ddd;
+      font-size: 14px;
+    }
+
+    button {
+      width: 100%;
+      padding: 12px;
+      background: #4f46e5;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-weight: 600;
+    }
+    button:disabled {
+      background: #aaa;
+    }
+
+    .error {
+      color: red;
+      margin-top: 10px;
+    }
+
+    .result {
+      border-left: 5px solid green;
+      background: #f9fafb;
+      padding: 16px;
+      border-radius: 6px;
+      margin-top: 15px;
+    }
+
+    .valid {
+      color: green;
+    }
+
+    .invalid {
+      color: red;
+    }
+
+    .details p {
+      margin: 4px 0;
+    }
+
+    .hash {
+      margin-top: 8px;
+      font-size: 12px;
+      color: #555;
+      word-break: break-all;
+    }
+  `]
 })
 export class VerifyComponent {
 
   hash = '';
-  result: any;
+  result: any = null;
+  error = '';
+  loading = false;
 
   constructor(private api: ApiService) {}
 
   verify() {
-    this.api.verify(this.hash).subscribe(res => this.result = res);
+    if (!this.hash.trim()) return;
+
+    this.loading = true;
+    this.error = '';
+    this.result = null;
+
+    this.api.verify(this.hash.trim()).subscribe({
+      next: res => {
+        this.result = res;
+        this.loading = false;
+      },
+      error: () => {
+        this.error = 'Verification failed. Please try again.';
+        this.loading = false;
+      }
+    });
+  }
+
+  reset() {
+    this.result = null;
+    this.error = '';
   }
 }

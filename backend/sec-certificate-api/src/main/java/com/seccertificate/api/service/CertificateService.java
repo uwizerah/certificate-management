@@ -26,16 +26,19 @@ public class CertificateService {
     private final CertificateRepository certRepo;
     private final CertificateTemplateRepository templateRepo;
     private final PdfService pdfService;
+    private final CertificateSignatureService signatureService;
     private final ObjectMapper mapper;
 
     public CertificateService(CertificateRepository certRepo,
                               CertificateTemplateRepository templateRepo,
                               PdfService pdfService,
-                              ObjectMapper mapper) {
+                              ObjectMapper mapper,
+                              CertificateSignatureService signatureService) {
         this.certRepo = certRepo;
         this.templateRepo = templateRepo;
         this.pdfService = pdfService;
         this.mapper = mapper;
+        this.signatureService = signatureService;
     }
 
     public Certificate generate(Customer customer, Long templateId, Map<String,String> data) throws Exception {
@@ -45,6 +48,7 @@ public class CertificateService {
             throw new RuntimeException("Unauthorized template usage");
         }
 
+        // 1. Save base certificate
         Certificate cert = new Certificate();
         cert.setCustomer(customer);
         cert.setTemplate(template);
@@ -54,17 +58,23 @@ public class CertificateService {
         cert.setVerificationHash(hash(customer.getId() + "-" + templateId + "-" + System.nanoTime()));
 
         Certificate saved = certRepo.save(cert);
+
+        // 2. Generate PDF
         pdfService.generatePdf(saved);
 
-        // Reload after PDF creation
-        Certificate ready = certRepo.findById(saved.getId())
+        // 3. Reload (FINAL state)
+        Certificate finalCert = certRepo.findById(saved.getId())
                 .orElseThrow(() -> new RuntimeException("PDF generation failed"));
 
-        if (ready.getPdfPath() == null) {
-            throw new RuntimeException("PDF generation failed");
+        if (finalCert.getPdfPath() == null) {
+            throw new RuntimeException("PDF not generated");
         }
 
-        return ready;
+        //4. SIGN AFTER FINAL STATE
+        signatureService.sign(finalCert);
+        certRepo.save(finalCert);
+
+        return finalCert;
     }
 
     public Resource downloadFor(Customer customer, Long id) throws Exception {
@@ -76,25 +86,26 @@ public class CertificateService {
         }
 
         if (cert.getPdfPath() == null || cert.getPdfPath().isBlank()) {
-            throw new RuntimeException("PDF has not yet been generated for this certificate");
+            throw new RuntimeException("PDF not yet generated");
         }
 
         Path path = Path.of(cert.getPdfPath());
-
         if (!Files.exists(path)) {
-            throw new RuntimeException("Certificate PDF file is missing on the server");
+            throw new RuntimeException("PDF missing on server");
         }
 
         return new UrlResource(path.toUri());
     }
 
-    private String hash(String input) throws Exception {
-        return HexFormat.of().formatHex(
-                MessageDigest.getInstance("SHA-256").digest(input.getBytes(StandardCharsets.UTF_8))
-        );
-    }
-
     public List<Certificate> listFor(Customer customer) {
         return certRepo.findByCustomerIdOrderByCreatedAtDesc(customer.getId());
+    }
+
+
+    private String hash(String input) throws Exception {
+        return HexFormat.of().formatHex(
+                MessageDigest.getInstance("SHA-256")
+                        .digest(input.getBytes(StandardCharsets.UTF_8))
+        );
     }
 }
